@@ -1,0 +1,29 @@
+add_cart:
+  item_id: "49881"
+  num: 2
+  shop_type: "distributor"
+  cart_type: "cart"
+  distributor_id: 0
+  company_id: "2"
+
+quantity_cases:
+  - case_id: "quantity_1"
+    title: "购买数量为 1"
+    num: 1
+    expected_valid: true
+
+  - case_id: "quantity_2"
+    title: "购买数量为 2"
+    num: 2
+    expected_valid: true
+
+  - case_id: "quantity_0"
+    title: "购买数量为 0，商品进入失效购物车"
+    num: 0
+    expected_valid: true
+    expected_cart_section: "invalid_cart"
+
+  - case_id: "quantity_negative_1"
+    title: "购买数量为负数"
+    num: -1
+    expected_valid: false
