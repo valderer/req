@@ -9,7 +9,11 @@ pipeline {
     stages {
         stage('Install dependencies') {
             steps {
-                sh 'python3 -m pip install -r requirements.txt'
+                sh '''
+                    python3 -m venv .venv-ci
+                    .venv-ci/bin/python -m pip install --upgrade pip
+                    .venv-ci/bin/python -m pip install -r requirements.txt
+                '''
             }
         }
 
@@ -26,7 +30,9 @@ pipeline {
                         variable: 'BASE_URL'
                     )
                 ]) {
-                    sh 'pytest -v'
+                    sh '''
+                        .venv-ci/bin/python -m pytest -v
+                    '''
                 }
             }
         }
