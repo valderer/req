@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        TEST_COMPANY_ID = '2'
+        TEST_TIMEOUT = '15'
+    }
+
     stages {
         stage('Install dependencies') {
             steps {
@@ -10,7 +15,19 @@ pipeline {
 
         stage('Run tests') {
             steps {
-                sh 'pytest'
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'req-test-account',
+                        usernameVariable: 'TEST_USERNAME',
+                        passwordVariable: 'TEST_PASSWORD'
+                    ),
+                    string(
+                        credentialsId: 'req-base-url',
+                        variable: 'BASE_URL'
+                    )
+                ]) {
+                    sh 'pytest -v'
+                }
             }
         }
     }
