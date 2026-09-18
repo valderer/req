@@ -2,7 +2,7 @@ list_products:
   is_star: "false"
   category: ""
   page: 1
-  pageSize: 20
+  pageSize: 3
   item_type: normal
   goodsSort: ""
   attribute_id: ""
