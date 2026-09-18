@@ -1,0 +1,18 @@
+list_products:
+  is_star: "false"
+  category: ""
+  page: 1
+  pageSize: 20
+  item_type: normal
+  goodsSort: ""
+  attribute_id: ""
+  is_point: "false"
+  company_id: "2"
+
+page_cases:
+  - case_id: page_size_20
+    page: 1
+    pageSize: 20
+  - case_id: page_size_1
+    page: 1
+    pageSize: 1

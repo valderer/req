@@ -6,6 +6,7 @@ import pytest
 from api.address_api import AddressApi
 from api.cart_api import CartApi
 from api.login_api import LoginApi
+from api.product_api import ProductApi
 from common.env_util import load_env_file
 from common.request_client import RequestClient
 from common.yaml_util import load_yaml
@@ -57,3 +58,8 @@ def address_data():
 @pytest.fixture
 def cart_api(site_client):
     return CartApi(site_client)
+
+
+@pytest.fixture
+def product_api(site_client):
+    return ProductApi(site_client)
