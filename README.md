@@ -76,9 +76,10 @@ req/
 │   └── address.yaml
 ├── tests/                  # pytest 测试用例
 │   ├── test_product.py
-│   ├── test_cart.py
-│   ├── test_address.py
-│   └── test_add_address.py
+│   ├── test_cart_flow.py
+│   ├── test_cart_parameters.py
+│   ├── test_address_flow.py
+│   └── test_address_parameters.py
 ├── scripts/
 │   └── run_tests.sh        # 本地测试、生成并打开 Allure 报告
 ├── conftest.py             # 公共 fixture
@@ -141,8 +142,6 @@ TEST_TIMEOUT=15
 pytest -v
 ```
 
-默认会跳过带有 `manual` 标记、可能保留测试数据的用例。
-
 执行指定模块：
 
 ```bash
@@ -162,12 +161,6 @@ pytest -m regression -v
 
 ```bash
 pytest -m "cart and regression" -v
-```
-
-明确执行手动用例：
-
-```bash
-pytest -m manual -v -s
 ```
 
 ## Allure 报告
@@ -205,7 +198,6 @@ macOS 也可以使用项目脚本完成测试、生成报告并打开浏览器�
 | `product` | 商品模块 |
 | `cart` | 购物车模块 |
 | `address` | 地址模块 |
-| `manual` | 手动执行、可能保留测试数据的用例 |
 
 ## 日志
 

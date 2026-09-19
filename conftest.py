@@ -24,7 +24,6 @@ def client():
         timeout=config.get("timeout", 10),
     )
 
-
 @pytest.fixture(scope="session")
 def site_client():
     return RequestClient(
@@ -56,8 +55,50 @@ def address_data():
 
 
 @pytest.fixture
+def address_cleanup(login_authorization, address_api):
+    """记录测试创建的地址，并在测试结束后统一清理。"""
+    created_addresses = []
+    yield created_addresses
+
+    for address in reversed(created_addresses):
+        response = address_api.delete_address(
+            authorization=login_authorization,
+            company_id=address["company_id"],
+            address_id=address["address_id"],
+        )
+        assert response.status_code in (200, 204), (
+            f"地址清理失败：address_id={address['address_id']}，"
+            f"HTTP {response.status_code}，响应：{response.text}"
+        )
+
+
+@pytest.fixture
 def cart_api(site_client):
     return CartApi(site_client)
+
+
+@pytest.fixture
+def cart_data():
+    return load_yaml(PROJECT_ROOT / "data" / "cart.yaml")["add_cart"]
+
+
+@pytest.fixture
+def cart_cleanup(login_authorization, cart_api):
+    """记录测试创建的购物车数据，并在测试结束后统一清理。"""
+    created_carts = []
+    yield created_carts
+
+    for cart in reversed(created_carts):
+        response = cart_api.delete_cart(
+            authorization=login_authorization,
+            cart_id=cart["cart_id"],
+            company_id=cart["company_id"],
+        )
+        assert response.status_code == 200, (
+            f"购物车清理失败：cart_id={cart['cart_id']}，"
+            f"HTTP {response.status_code}，响应：{response.text}"
+        )
+        assert response.json().get("data", {}).get("status") is True
 
 
 @pytest.fixture
