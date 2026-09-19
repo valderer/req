@@ -1,5 +1,8 @@
 def extract_cart_items(cart_data, section):
     """兼容 valid_cart 分组结构和 invalid_cart 直接列表结构。"""
+    if not isinstance(cart_data, dict):
+        return []
+
     cart_items = cart_data.get(section, [])
     if section == "invalid_cart":
         return cart_items

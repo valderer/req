@@ -1,12 +1,24 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     environment {
         TEST_COMPANY_ID = '2'
         TEST_TIMEOUT = '15'
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                retry(3) {
+                    checkout scm
+                }
+            }
+        }
+
         stage('Install dependencies') {
             steps {
                 sh '''
@@ -40,42 +52,46 @@ pipeline {
 
     post {
         always {
-            allure([
-                includeProperties: false,
-                jdk: '',
-                results: [[path: 'allure-results']]
-            ])
+            node {
+                if (fileExists('allure-results')) {
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        results: [[path: 'allure-results']]
+                    ])
+                } else {
+                    echo '没有找到 allure-results，跳过 Allure 报告发布'
+                }
+            }
         }
 
         success {
-            withCredentials([
-                string(
-                    credentialsId: 'feishu-webhook',
-                    variable: 'FEISHU_WEBHOOK'
-                )
-            ]) {
-                sh '''
-                    curl -fsS -X POST "$FEISHU_WEBHOOK" \\
-                        -H "Content-Type: application/json" \\
-                        -d "{\"msg_type\":\"text\",\"content\":{\"text\":\"Jenkins 自动化测试成功\\n项目：$JOB_NAME\\n构建：#$BUILD_NUMBER\\n详情：$BUILD_URL\"}}" \\
-                        || echo "飞书成功通知发送失败，但不影响构建结果"
-                '''
+            node {
+                withCredentials([
+                    string(
+                        credentialsId: 'feishu-webhook',
+                        variable: 'FEISHU_WEBHOOK'
+                    )
+                ]) {
+                    sh '''
+                        FEISHU_STATUS=success python3 scripts/send_feishu.py
+                    '''
+                }
             }
         }
 
         failure {
-            withCredentials([
-                string(
-                    credentialsId: 'feishu-webhook',
-                    variable: 'FEISHU_WEBHOOK'
-                )
-            ]) {
-                sh '''
-                    curl -fsS -X POST "$FEISHU_WEBHOOK" \\
-                        -H "Content-Type: application/json" \\
-                        -d "{\"msg_type\":\"text\",\"content\":{\"text\":\"Jenkins 自动化测试失败\\n项目：$JOB_NAME\\n构建：#$BUILD_NUMBER\\n详情：$BUILD_URL\"}}" \\
-                        || echo "飞书失败通知发送失败"
-                '''
+            node {
+                withCredentials([
+                    string(
+                        credentialsId: 'feishu-webhook',
+                        variable: 'FEISHU_WEBHOOK'
+                    )
+                ]) {
+                    sh '''
+                        FEISHU_STATUS=failure python3 scripts/send_feishu.py
+                    '''
+                }
             }
         }
     }
