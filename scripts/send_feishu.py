@@ -26,10 +26,17 @@ def read_test_statistics():
 
     try:
         root = ET.parse(report_path).getroot()
-        result["total"] = int(root.attrib.get("tests", 0))
-        result["failed"] = int(root.attrib.get("failures", 0))
-        result["errors"] = int(root.attrib.get("errors", 0))
-        result["skipped"] = int(root.attrib.get("skipped", 0))
+        suites = [root] if root.tag == "testsuite" else root.findall(".//testsuite")
+        result["total"] = sum(int(suite.attrib.get("tests", 0)) for suite in suites)
+        result["failed"] = sum(
+            int(suite.attrib.get("failures", 0)) for suite in suites
+        )
+        result["errors"] = sum(
+            int(suite.attrib.get("errors", 0)) for suite in suites
+        )
+        result["skipped"] = sum(
+            int(suite.attrib.get("skipped", 0)) for suite in suites
+        )
         result["passed"] = max(
             result["total"]
             - result["failed"]
@@ -37,7 +44,8 @@ def read_test_statistics():
             - result["skipped"],
             0,
         )
-        result["duration"] = f"{float(root.attrib.get('time', 0)):.2f}s"
+        total_time = sum(float(suite.attrib.get("time", 0)) for suite in suites)
+        result["duration"] = f"{total_time:.2f}s"
     except (ET.ParseError, ValueError, TypeError):
         pass
     return result
