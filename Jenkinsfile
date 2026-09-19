@@ -43,7 +43,9 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                        .venv-ci/bin/python -m pytest -v
+                        mkdir -p reports
+                        .venv-ci/bin/python -m pytest -v \\
+                            --junitxml=reports/junit.xml
                     '''
                 }
             }
@@ -62,6 +64,10 @@ pipeline {
                 } else {
                     echo '没有找到 allure-results，跳过 Allure 报告发布'
                 }
+                junit(
+                    allowEmptyResults: true,
+                    testResults: 'reports/junit.xml'
+                )
             }
         }
 
@@ -74,7 +80,8 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                        FEISHU_STATUS=success python3 scripts/send_feishu.py
+                        FEISHU_STATUS=success \\
+                        python3 scripts/send_feishu.py
                     '''
                 }
             }
@@ -89,7 +96,8 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                        FEISHU_STATUS=failure python3 scripts/send_feishu.py
+                        FEISHU_STATUS=failure \\
+                        python3 scripts/send_feishu.py
                     '''
                 }
             }
