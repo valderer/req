@@ -46,5 +46,37 @@ pipeline {
                 results: [[path: 'allure-results']]
             ])
         }
+
+        success {
+            withCredentials([
+                string(
+                    credentialsId: 'feishu-webhook',
+                    variable: 'FEISHU_WEBHOOK'
+                )
+            ]) {
+                sh '''
+                    curl -fsS -X POST "$FEISHU_WEBHOOK" \\
+                        -H "Content-Type: application/json" \\
+                        -d "{\"msg_type\":\"text\",\"content\":{\"text\":\"Jenkins 自动化测试成功\\n项目：$JOB_NAME\\n构建：#$BUILD_NUMBER\\n详情：$BUILD_URL\"}}" \\
+                        || echo "飞书成功通知发送失败，但不影响构建结果"
+                '''
+            }
+        }
+
+        failure {
+            withCredentials([
+                string(
+                    credentialsId: 'feishu-webhook',
+                    variable: 'FEISHU_WEBHOOK'
+                )
+            ]) {
+                sh '''
+                    curl -fsS -X POST "$FEISHU_WEBHOOK" \\
+                        -H "Content-Type: application/json" \\
+                        -d "{\"msg_type\":\"text\",\"content\":{\"text\":\"Jenkins 自动化测试失败\\n项目：$JOB_NAME\\n构建：#$BUILD_NUMBER\\n详情：$BUILD_URL\"}}" \\
+                        || echo "飞书失败通知发送失败"
+                '''
+            }
+        }
     }
 }
