@@ -52,45 +52,51 @@ pipeline {
 
     post {
         always {
-            node {
-                if (fileExists('allure-results')) {
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        results: [[path: 'allure-results']]
-                    ])
-                } else {
-                    echo '没有找到 allure-results，跳过 Allure 报告发布'
+            script {
+                node {
+                    if (fileExists('allure-results')) {
+                        allure([
+                            includeProperties: false,
+                            jdk: '',
+                            results: [[path: 'allure-results']]
+                        ])
+                    } else {
+                        echo '没有找到 allure-results，跳过 Allure 报告发布'
+                    }
                 }
             }
         }
 
         success {
-            node {
-                withCredentials([
-                    string(
-                        credentialsId: 'feishu-webhook',
-                        variable: 'FEISHU_WEBHOOK'
-                    )
-                ]) {
-                    sh '''
-                        FEISHU_STATUS=success python3 scripts/send_feishu.py
-                    '''
+            script {
+                node {
+                    withCredentials([
+                        string(
+                            credentialsId: 'feishu-webhook',
+                            variable: 'FEISHU_WEBHOOK'
+                        )
+                    ]) {
+                        sh '''
+                            FEISHU_STATUS=success python3 scripts/send_feishu.py
+                        '''
+                    }
                 }
             }
         }
 
         failure {
-            node {
-                withCredentials([
-                    string(
-                        credentialsId: 'feishu-webhook',
-                        variable: 'FEISHU_WEBHOOK'
-                    )
-                ]) {
-                    sh '''
-                        FEISHU_STATUS=failure python3 scripts/send_feishu.py
-                    '''
+            script {
+                node {
+                    withCredentials([
+                        string(
+                            credentialsId: 'feishu-webhook',
+                            variable: 'FEISHU_WEBHOOK'
+                        )
+                    ]) {
+                        sh '''
+                            FEISHU_STATUS=failure python3 scripts/send_feishu.py
+                        '''
+                    }
                 }
             }
         }
